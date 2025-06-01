@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>User Page</title>
+</head>
+<body>
+<h1>Welcome to User Page, <span th:text="${currentUser.username}"></span>!</h1>
+
+<div>
+    <h3>Your information:</h3>
+    <p>Username: <span th:text="${currentUser.username}"></span></p>
+    <p>Roles: <span th:text="${currentUser.roles}"></span></p>
+</div>
+
+<div sec:authorize="isAuthenticated()">
+    <form th:action="@{/logout}" method="post">
+        <input type="submit" value="Sign Out"/>
+    </form>
+</div>
+</body>
+</html>
