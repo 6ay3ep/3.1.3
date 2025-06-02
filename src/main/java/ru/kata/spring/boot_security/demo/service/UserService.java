@@ -34,7 +34,6 @@ public class UserService {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        // Обновляем только необходимые поля
         if (updatedUser.getUsername() != null && !updatedUser.getUsername().isEmpty()) {
             existingUser.setUsername(updatedUser.getUsername());
         }

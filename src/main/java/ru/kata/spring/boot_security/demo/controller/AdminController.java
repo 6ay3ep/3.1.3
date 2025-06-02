@@ -9,24 +9,6 @@ import ru.kata.spring.boot_security.demo.service.UserService;
 
 import java.security.Principal;
 
-//@Controller
-//@RequestMapping("/admin")
-//public class AdminController {
-//    private final UserService userService;
-//
-//    public AdminController(UserService userService) {
-//        this.userService = userService;
-//    }
-//
-//    @GetMapping
-//    public String adminPage(Principal principal, Model model) {
-//        model.addAttribute("currentUser", userService.findByUsername(principal.getName()));
-//        model.addAttribute("users", userService.findAll());
-//        model.addAttribute("newUser", new User());
-//        return "admin";
-//    }
-//}
-
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
