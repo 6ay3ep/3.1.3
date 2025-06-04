@@ -12,7 +12,7 @@
         <span class="navbar-text text-white">
 <span class="fw-bold" th:text="${currentUser.username}"></span>
 with roles:
-<span th:text="${currentUser.authorities}"></span>
+<span th:text="${currentUser.roles}"></span>
 </span>
 
         <a th:href="@{/logout}" class="btn btn-outline-light">Logout</a>
@@ -20,10 +20,13 @@ with roles:
 </nav>
 <div class="container-fluid" style="padding-top: 20px">
     <div class="row">
-
-
         <div class="col">
             <div class="row">
+                <button sec:authorize="hasRole('ADMIN')"
+                        class="btn btn-primary btn-lg btn-block text-start"
+                        onclick="window.location.href = '/admin'">
+                    Admin
+                </button>
                 <button class="btn btn-primary btn-lg btn-block text-start"
                         onclick="window.location.href = '/user'">
                     User

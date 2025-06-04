@@ -17,7 +17,7 @@ public class User implements UserDetails {
     private Long id;
     private String username;
     private String lastname;
-    private int age;
+    private Integer age;
     private String email;
 
     private String password;
@@ -107,11 +107,11 @@ public class User implements UserDetails {
         this.lastname = lastname;
     }
 
-    public int getAge() {
+    public Integer getAge() {
         return age;
     }
 
-    public void setAge(int age) {
+    public void setAge(Integer age) {
         this.age = age;
     }
 

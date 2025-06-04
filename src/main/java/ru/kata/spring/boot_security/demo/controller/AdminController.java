@@ -9,6 +9,7 @@ import ru.kata.spring.boot_security.demo.service.RoleServiceImpl;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -30,37 +31,43 @@ public class AdminController {
         return "admin";
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
-        User user = userService.findById(id);
-        if (user == null) {
-            throw new RuntimeException("User not found with id: " + id);
+    @PostMapping("/update")
+    public String updateUser(@ModelAttribute User user,
+                             @RequestParam(value = "roles", required = false) List<Long> roleIds) {
+        if (user.getId() == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
         }
-        model.addAttribute("user", user);
-        model.addAttribute("allRoles", roleService.findAll());
-        return "edit";
-    }
 
-    @PostMapping("/edit")
-    public String updateUser(@ModelAttribute User user) {
+        if (roleIds != null && !roleIds.isEmpty()) {
+            user.setRoles(roleService.findRolesByIds(roleIds));
+        } else {
+            User existingUser = userService.findById(user.getId());
+            user.setRoles(existingUser.getRoles());
+        }
+
         userService.update(user.getId(), user);
         return "redirect:/admin";
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteUser(@PathVariable Long id) {
+    @PostMapping("/delete")
+    public String deleteUser(@RequestParam("id") Long id) {
         userService.deleteById(id);
         return "redirect:/admin";
     }
+
     @GetMapping("/add")
     public String showAddForm(Model model) {
         model.addAttribute("newUser", new User());
         model.addAttribute("allRoles", roleService.findAll());
-        return "add-user";
+        return "/admin";
     }
 
     @PostMapping("/add")
-    public String addUser(@ModelAttribute("newUser") User user) {
+    public String addUser(@ModelAttribute("newUser") User user,
+                          @RequestParam(value = "roles", required = false) List<Long> roleIds) {
+        if (roleIds != null && !roleIds.isEmpty()) {
+            user.setRoles(roleService.findRolesByIds(roleIds));
+        }
         userService.save(user);
         return "redirect:/admin";
     }
