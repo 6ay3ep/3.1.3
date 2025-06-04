@@ -9,6 +9,7 @@ import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
