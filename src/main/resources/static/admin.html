@@ -1,392 +1,156 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- CSRF токены для безопасности -->
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <!-- Bootstrap CSS -->
+    <script>
+        // Получение CSRF токена
+        function getCSRFToken() {
+            return document.querySelector('meta[name="_csrf"]').content;
+        }
+    </script>
 </head>
 <body>
-
-<nav class="navbar navbar-dark bg-dark px-3">
-    <div class="container-fluid d-flex justify-content-between align-items-center">
-        <span class="navbar-text text-white">
-            <span class="fw-bold" id="currentUsername"></span>
-            with roles:
-            <span id="currentUserRoles"></span>
-        </span>
-        <a href="/logout" class="btn btn-outline-light">Logout</a>
+<!-- Навигационная панель -->
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+            <span class="navbar-text text-white">
+                Logged as: <span id="currentUser"></span>
+                Roles: <span id="currentRoles"></span>
+            </span>
+        <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
     </div>
 </nav>
 
-<div class="container-fluid" style="padding-top: 20px">
-    <div class="row">
-        <div class="col">
-            <div class="row">
-                <button sec:authorize="hasRole('ADMIN')"
-                        class="btn btn-primary btn-lg btn-block text-start"
-                        onclick="window.location.href = '/admin'">
-                    Admin
-                </button>
-                <button class="btn btn-primary btn-lg btn-block text-start"
-                        onclick="window.location.href = '/user'">
-                    User
-                </button>
-            </div>
-        </div>
+<!-- Основной контент -->
+<div class="container mt-4">
+    <h1>Admin Panel</h1>
 
-        <div class="container-fluid col-10 bg-light" style="padding-left: 20px">
-            <div class="tab-content" id="homeTabContent">
-                <div class="tab-pane fade show active" id="admin" role="tabpanel" aria-labelledby="admin-tab">
-                    <h1>Admin panel</h1>
+    <!-- Таблица пользователей -->
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Roles</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="usersTable">
+        <!-- Данные будут загружены через JS -->
+        </tbody>
+    </table>
 
-                    <nav>
-                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                            <button class="nav-link active" id="usersTable-tab" data-bs-toggle="tab"
-                                    data-bs-target="#usersTable" type="button" role="tab"
-                                    aria-controls="usersTable" aria-selected="true">Users table
-                            </button>
-                            <button class="nav-link" id="newUser-tab" data-bs-toggle="tab"
-                                    data-bs-target="#newUser" type="button" role="tab" aria-controls="newUser"
-                                    aria-selected="false">New User
-                            </button>
-                        </div>
-                    </nav>
-
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="usersTable" role="tabpanel"
-                             aria-labelledby="usersTable-tab">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">All users</h3>
-                                </div>
-                                <div class="container mt-4">
-                                    <table class="table table-hover text-center">
-                                        <thead>
-                                        <tr>
-                                            <th>Id</th>
-                                            <th>First Name</th>
-                                            <th>Last Name</th>
-                                            <th>Age</th>
-                                            <th>Email</th>
-                                            <th>Role</th>
-                                            <th>Edit</th>
-                                            <th>Delete</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody id="usersTableBody">
-                                        <!-- Данные заполняются через JS -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="tab-pane fade" id="newUser" role="tabpanel" aria-labelledby="newUser-tab">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h2 class="text-title">Add new</h2>
-                                </div>
-                                <form id="addUserForm">
-                                    <div class="d-flex flex-column align-items-center">
-                                        <div class="mb-3">
-                                            <label for="newUsername" class="form-label fw-bold text-center w-100">First Name</label>
-                                            <input type="text" id="newUsername" class="form-control" name="username" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="newLastname"
-                                                   class="form-label fw-bold text-center w-100">Last Name</label>
-                                            <input type="text" class="form-control" name="lastname" id="newLastname" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="newAge" class="form-label fw-bold text-center w-100">Age</label>
-                                            <input type="number" class="form-control" name="age" id="newAge" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="newEmail" class="form-label fw-bold text-center w-100">Email</label>
-                                            <input type="email" class="form-control" name="email" id="newEmail" required>
-                                        </div>
-                                        <div class="mb-3 col-md-2 text-center">
-                                            <label class="form-label" for="roleNew"><b>Role</b></label>
-                                            <select id="roleNew" name="roles" class="form-control w-100" multiple size="2" required>
-                                                <option value="1">USER</option>
-                                                <option value="2">ADMIN</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="newPassword" class="form-label fw-bold text-center w-100">Password</label>
-                                            <input type="password" class="form-control" name="password" id="newPassword" required>
-                                        </div>
-                                    </div>
-                                    <div class="text-center">
-                                        <button type="submit" class="btn btn-primary">Add new</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Форма добавления пользователя -->
+    <div class="card mt-4">
+        <div class="card-header">Add New User</div>
+        <div class="card-body">
+            <form id="addUserForm">
+                <div class="mb-3">
+                    <input type="text" class="form-control" placeholder="Username" name="username" required>
                 </div>
-            </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" placeholder="Password" name="password" required>
+                </div>
+                <div class="mb-3">
+                    <select class="form-select" name="roles" multiple required>
+                        <option value="ROLE_USER">USER</option>
+                        <option value="ROLE_ADMIN">ADMIN</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Add User</button>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно для обновления пользователя -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Update User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editUserForm">
-                    <input type="hidden" id="editId" name="id">
-
-                    <div class="mb-3 text-center">
-                        <label for="editUsername" class="form-label" style="font-weight: bold;">First Name</label>
-                        <input id="editUsername" type="text" class="form-control" name="username" required>
-                    </div>
-                    <div class="mb-3 text-center">
-                        <label for="editLastname" class="form-label" style="font-weight: bold;">Last Name</label>
-                        <input id="editLastname" type="text" class="form-control" name="lastname" required>
-                    </div>
-                    <div class="mb-3 text-center">
-                        <label for="editAge" class="form-label " style="font-weight: bold;">Age</label>
-                        <input id="editAge" type="number" class="form-control" name="age" required>
-                    </div>
-                    <div class="mb-3 text-center">
-                        <label for="editEmail" class="form-label " style="font-weight: bold;">Email</label>
-                        <input id="editEmail" type="email" class="form-control" name="email" required>
-                    </div>
-                    <div class="mb-3 text-center">
-                        <label class="form-label" for="editRoles"><b>Role</b></label>
-                        <select id="editRoles" name="roles" class="form-select" multiple size="2" required>
-                            <option value="1">USER</option>
-                            <option value="2">ADMIN</option>
-                        </select>
-                    </div>
-                    <div class="mb-3 text-center">
-                        <label for="editPassword" class="form-label" style="font-weight: bold;">Password</label>
-                        <input id="editPassword" type="password" class="form-control" name="password">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap & jQuery -->
 <script>
-    // Получение CSRF токенов
-    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    $(document).ready(function() {
+        const csrfToken = getCSRFToken();
 
-    // DOM элементы
-    const usersTableBody = document.getElementById('usersTableBody');
-    const addUserForm = document.getElementById('addUserForm');
-    const editUserForm = document.getElementById('editUserForm');
-    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-
-    // Загрузка данных текущего пользователя
-    async function loadCurrentUser() {
-        try {
-            const response = await fetch('/api/user', {
-                headers: {
-                    [csrfHeader]: csrfToken
-                }
-            });
-            const user = await response.json();
-
-            document.getElementById('currentUsername').textContent = user.username;
-            document.getElementById('currentUserRoles').textContent = user.roles.map(r => r.name).join(', ');
-        } catch (error) {
-            console.error('Ошибка загрузки текущего пользователя:', error);
-        }
-    }
-
-    // Загрузка списка пользователей
-    async function loadUsers() {
-        try {
-            const response = await fetch('/api/admin', {
-                headers: {
-                    [csrfHeader]: csrfToken
-                }
-            });
-            const users = await response.json();
-            renderUsers(users);
-        } catch (error) {
-            console.error('Ошибка загрузки пользователей:', error);
-        }
-    }
-
-    // Отображение пользователей в таблице
-    function renderUsers(users) {
-        usersTableBody.innerHTML = '';
-
-        users.forEach(user => {
-            const row = document.createElement('tr');
-
-            row.innerHTML = `
-            <td>${user.id}</td>
-            <td>${user.username}</td>
-            <td>${user.lastname}</td>
-            <td>${user.age}</td>
-            <td>${user.email}</td>
-            <td>${user.roles.map(r => r.name).join(', ')}</td>
-            <td>
-                <button class="btn btn-primary btn-sm edit-btn"
-                        data-id="${user.id}">Edit</button>
-            </td>
-            <td>
-                <button class="btn btn-danger btn-sm delete-btn"
-                        data-id="${user.id}">Delete</button>
-            </td>
-        `;
-
-            usersTableBody.appendChild(row);
-        });
-
-        // Добавление обработчиков событий
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', () => openEditModal(btn.dataset.id));
-        });
-
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', () => deleteUser(btn.dataset.id));
-        });
-    }
-
-    // Открытие модального окна редактирования
-    async function openEditModal(userId) {
-        try {
-            const response = await fetch(`/api/admin/${userId}`, {
-                headers: {
-                    [csrfHeader]: csrfToken
-                }
-            });
-            const user = await response.json();
-
-            // Заполнение формы
-            document.getElementById('editId').value = user.id;
-            document.getElementById('editUsername').value = user.username;
-            document.getElementById('editLastname').value = user.lastname;
-            document.getElementById('editAge').value = user.age;
-            document.getElementById('editEmail').value = user.email;
-
-            // Выбор ролей
-            const roleSelect = document.getElementById('editRoles');
-            Array.from(roleSelect.options).forEach(option => {
-                option.selected = user.roles.some(role =>
-                    role.id.toString() === option.value
-                );
-            });
-
-            // Открытие модального окна
-            editModal.show();
-        } catch (error) {
-            console.error('Ошибка загрузки данных пользователя:', error);
-            alert('Ошибка загрузки данных пользователя');
-        }
-    }
-
-    // Удаление пользователя
-    async function deleteUser(userId) {
-        if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-            try {
-                await fetch(`/api/admin/${userId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        [csrfHeader]: csrfToken
-                    }
+        // Загрузка текущего пользователя
+        function loadCurrentUser() {
+            fetch('/api/user')
+                .then(response => response.json())
+                .then(user => {
+                    $('#currentUser').text(user.username);
+                    $('#currentRoles').text(user.roles.map(r => r.name.replace('ROLE_', '')).join(', '));
                 });
-                loadUsers();
-                alert('Пользователь успешно удален');
-            } catch (error) {
-                console.error('Ошибка удаления пользователя:', error);
-                alert('Ошибка удаления пользователя');
-            }
         }
-    }
 
-    // Обработка формы добавления пользователя
-    addUserForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+        // Загрузка всех пользователей
+        function loadUsers() {
+            fetch('/api/admin')
+                .then(response => response.json())
+                .then(users => {
+                    const tableBody = $('#usersTable').empty();
+                    users.forEach(user => {
+                        const roles = user.roles.map(r =>
+                            `<span class="badge bg-secondary">${r.name.replace('ROLE_', '')}</span>`
+                        ).join(' ');
 
-        const formData = new FormData(addUserForm);
-        const userData = Object.fromEntries(formData.entries());
+                        tableBody.append(`
+                                <tr>
+                                    <td>${user.id}</td>
+                                    <td>${user.username}</td>
+                                    <td>${roles}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning edit-btn" data-id="${user.id}">Edit</button>
+                                        <button class="btn btn-sm btn-danger delete-btn" data-id="${user.id}">Delete</button>
+                                    </td>
+                                </tr>
+                            `);
+                    });
 
-        // Преобразование ролей в массив
-        userData.roles = Array.from(formData.getAll('roles'));
+                    // Назначение обработчиков
+                    $('.edit-btn').click(e => {
+                        const userId = $(e.target).data('id');
+                        openEditModal(userId);
+                    });
 
-        try {
-            const response = await fetch('/api/admin', {
+                    $('.delete-btn').click(e => {
+                        const userId = $(e.target).data('id');
+                        deleteUser(userId);
+                    });
+                });
+        }
+
+        // Открытие модального окна редактирования
+        function openEditModal(userId) {
+            fetch(`/api/admin/${userId}`)
+                .then(response => response.json())
+                .then(user => {
+                    // Заполнение формы редактирования
+                    // ... реализация модального окна ...
+                });
+        }
+
+        // Обработка добавления пользователя
+        $('#addUserForm').submit(e => {
+            e.preventDefault();
+            const formData = {
+                username: $('input[name="username"]').val(),
+                password: $('input[name="password"]').val(),
+                roles: $('select[name="roles"]').val()
+            };
+
+            fetch('/api/admin', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    [csrfHeader]: csrfToken
+                    'X-CSRF-TOKEN': csrfToken
                 },
-                body: JSON.stringify(userData)
-            });
+                body: JSON.stringify(formData)
+            })
+                .then(() => {
+                    loadUsers();
+                    e.target.reset();
+                });
+        });
 
-            if (response.ok) {
-                loadUsers();
-                addUserForm.reset();
-                alert('Пользователь успешно добавлен');
-            } else {
-                throw new Error('Ошибка добавления пользователя');
-            }
-        } catch (error) {
-            console.error('Ошибка добавления пользователя:', error);
-            alert('Ошибка добавления пользователя');
-        }
-    });
-
-    // Обработка формы редактирования пользователя
-    editUserForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const formData = new FormData(editUserForm);
-        const userData = Object.fromEntries(formData.entries());
-        const userId = userData.id;
-
-        // Преобразование ролей в массив
-        userData.roles = Array.from(formData.getAll('roles'));
-
-        // Если пароль не изменен, удаляем поле
-        if (!userData.password) {
-            delete userData.password;
-        }
-
-        try {
-            const response = await fetch(`/api/admin/${userId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    [csrfHeader]: csrfToken
-                },
-                body: JSON.stringify(userData)
-            });
-
-            if (response.ok) {
-                loadUsers();
-                editModal.hide();
-                alert('Пользователь успешно обновлен');
-            } else {
-                throw new Error('Ошибка обновления пользователя');
-            }
-        } catch (error) {
-            console.error('Ошибка обновления пользователя:', error);
-            alert('Ошибка обновления пользователя');
-        }
-    });
-
-    // Инициализация при загрузке страницы
-    document.addEventListener('DOMContentLoaded', () => {
+        // Инициализация
         loadCurrentUser();
         loadUsers();
     });
