@@ -75,7 +75,6 @@
                                         </tr>
                                         </thead>
                                         <tbody id="usersTableBody">
-                                        <!-- Данные заполняются через JS -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -88,7 +87,6 @@
                                     <h2 class="text-title">Add new</h2>
                                 </div>
                                 <form id="addUserForm">
-<!--                                    <input type="hidden" name="_csrf" value="${csrfToken}">-->
                                     <div class="d-flex flex-column align-items-center">
                                         <div class="mb-3">
                                             <label for="newUsername" class="form-label fw-bold text-center w-100">First Name</label>
@@ -132,7 +130,6 @@
     </div>
 </div>
 
-<!-- Модальное окно для обновления пользователя -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -180,235 +177,5 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!--<script>-->
-
-<!--    function getCookie(name) {-->
-<!--        const value = `; ${document.cookie}`;-->
-<!--        const parts = value.split(`; ${name}=`);-->
-<!--        if (parts.length === 2) return parts.pop().split(';').shift();-->
-<!--    }-->
-
-<!--    const csrfToken = getCookie("XSRF-TOKEN"); // Получаем токен из куки-->
-<!--    const csrfHeader = 'X-XSRF-TOKEN';-->
-
-<!--    async function fetchData(url, options = {}) {-->
-<!--        options.headers = {-->
-<!--            ...options.headers,-->
-<!--            [csrfHeader]: csrfToken // Добавляем токен в заголовок-->
-<!--        };-->
-<!--        const response = await fetch(url, options);-->
-<!--        return response;-->
-<!--    }-->
-<!--    // DOM элементы-->
-<!--    const usersTableBody = document.getElementById('usersTableBody');-->
-<!--    const addUserForm = document.getElementById('addUserForm');-->
-<!--    const editUserForm = document.getElementById('editUserForm');-->
-<!--    const editModal = new bootstrap.Modal(document.getElementById('editModal'));-->
-<!--    const adminBtn = document.getElementById('adminBtn');-->
-
-<!--    // Загрузка данных текущего пользователя-->
-<!--    async function loadCurrentUser() {-->
-<!--        try {-->
-<!--            const response = await fetch('/api/user', {-->
-<!--                headers: {-->
-<!--                    [csrfHeader]: csrfToken-->
-<!--                }-->
-<!--            });-->
-<!--            const user = await response.json();-->
-
-<!--            document.getElementById('currentUsername').textContent = user.username;-->
-<!--            document.getElementById('currentUserRoles').textContent = user.roles.map(r => r.name).join(', ');-->
-
-<!--            // Показать/скрыть кнопку Admin-->
-<!--            const isAdmin = user.roles.some(role => role.name === 'ADMIN');-->
-<!--            adminBtn.style.display = isAdmin ? 'block' : 'none';-->
-<!--            adminBtn.addEventListener('click', () => {-->
-<!--                window.location.href = '/admin';-->
-<!--            });-->
-<!--        } catch (error) {-->
-<!--            console.error('Ошибка загрузки текущего пользователя:', error);-->
-<!--        }-->
-<!--    }-->
-<!--    // Загрузка списка пользователей-->
-<!--    async function loadUsers() {-->
-<!--        try {-->
-<!--            const response = await fetch('/api/admin', {-->
-<!--                headers: {-->
-<!--                    [csrfHeader]: csrfToken-->
-<!--                }-->
-<!--            });-->
-<!--            const users = await response.json();-->
-<!--            renderUsers(users);-->
-<!--        } catch (error) {-->
-<!--            console.error('Ошибка загрузки пользователей:', error);-->
-<!--        }-->
-<!--    }-->
-
-<!--    // Отображение пользователей в таблице-->
-<!--    function renderUsers(users) {-->
-<!--        usersTableBody.innerHTML = '';-->
-
-<!--        users.forEach(user => {-->
-<!--            const row = document.createElement('tr');-->
-
-<!--            row.innerHTML = `-->
-<!--            <td>${user.id}</td>-->
-<!--            <td>${user.username}</td>-->
-<!--            <td>${user.lastname}</td>-->
-<!--            <td>${user.age}</td>-->
-<!--            <td>${user.email}</td>-->
-<!--            <td>${user.roles.map(r => r.name).join(', ')}</td>-->
-<!--            <td>-->
-<!--                <button class="btn btn-primary btn-sm edit-btn"-->
-<!--                        data-id="${user.id}">Edit</button>-->
-<!--            </td>-->
-<!--            <td>-->
-<!--                <button class="btn btn-danger btn-sm delete-btn"-->
-<!--                        data-id="${user.id}">Delete</button>-->
-<!--            </td>-->
-<!--        `;-->
-
-<!--            usersTableBody.appendChild(row);-->
-<!--        });-->
-
-<!--        // Добавление обработчиков событий-->
-<!--        document.querySelectorAll('.edit-btn').forEach(btn => {-->
-<!--            btn.addEventListener('click', () => openEditModal(btn.dataset.id));-->
-<!--        });-->
-
-<!--        document.querySelectorAll('.delete-btn').forEach(btn => {-->
-<!--            btn.addEventListener('click', () => deleteUser(btn.dataset.id));-->
-<!--        });-->
-<!--    }-->
-
-<!--    // Открытие модального окна редактирования-->
-<!--    async function openEditModal(userId) {-->
-<!--        try {-->
-<!--            const response = await fetch(`/api/admin/${userId}`, {-->
-<!--                headers: {-->
-<!--                    [csrfHeader]: csrfToken-->
-<!--                }-->
-<!--            });-->
-<!--            const user = await response.json();-->
-
-<!--            // Заполнение формы-->
-<!--            document.getElementById('editId').value = user.id;-->
-<!--            document.getElementById('editUsername').value = user.username;-->
-<!--            document.getElementById('editLastname').value = user.lastname;-->
-<!--            document.getElementById('editAge').value = user.age;-->
-<!--            document.getElementById('editEmail').value = user.email;-->
-
-<!--            // Выбор ролей-->
-<!--            const roleSelect = document.getElementById('editRoles');-->
-<!--            Array.from(roleSelect.options).forEach(option => {-->
-<!--                option.selected = user.roles.some(role =>-->
-<!--                    role.id === parseInt(option.value)-->
-<!--                );-->
-<!--            });-->
-
-<!--            // Открытие модального окна-->
-<!--            editModal.show();-->
-<!--        } catch (error) {-->
-<!--            console.error('Ошибка загрузки данных пользователя:', error);-->
-<!--            alert('Ошибка загрузки данных пользователя');-->
-<!--        }-->
-<!--    }-->
-
-<!--    // Удаление пользователя-->
-<!--    async function deleteUser(userId) {-->
-<!--        if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {-->
-<!--            try {-->
-<!--                await fetch(`/api/admin/${userId}`, {-->
-<!--                    method: 'DELETE',-->
-<!--                    headers: {-->
-<!--                        [csrfHeader]: csrfToken-->
-<!--                    }-->
-<!--                });-->
-<!--                loadUsers();-->
-<!--                alert('Пользователь успешно удален');-->
-<!--            } catch (error) {-->
-<!--                console.error('Ошибка удаления пользователя:', error);-->
-<!--                alert('Ошибка удаления пользователя');-->
-<!--            }-->
-<!--        }-->
-<!--    }-->
-
-<!--    // Обработка формы добавления пользователя-->
-<!--    addUserForm.addEventListener('submit', async (e) => {-->
-<!--        e.preventDefault();-->
-
-<!--        const formData = new FormData(addUserForm);-->
-<!--        const userData = Object.fromEntries(formData.entries());-->
-
-<!--        // Преобразование ролей в массив-->
-<!--        userData.roles = Array.from(formData.getAll('roles')).map(id => ({ id: parseInt(id) }));-->
-
-<!--        try {-->
-<!--            const response = await fetch('/api/admin', {-->
-<!--                method: 'POST',-->
-<!--                headers: {-->
-<!--                    'Content-Type': 'application/json',-->
-<!--                    [csrfHeader]: csrfToken-->
-<!--                },-->
-<!--                body: JSON.stringify(userData)-->
-<!--            });-->
-
-<!--            if (response.ok) {-->
-<!--                loadUsers();-->
-<!--                addUserForm.reset();-->
-<!--                alert('Пользователь успешно добавлен');-->
-<!--            } else {-->
-<!--                throw new Error('Ошибка добавления пользователя');-->
-<!--            }-->
-<!--        } catch (error) {-->
-<!--            console.error('Ошибка добавления пользователя:', error);-->
-<!--            alert('Ошибка добавления пользователя');-->
-<!--        }-->
-<!--    });-->
-
-<!--    // Обработка формы редактирования пользователя-->
-<!--    editUserForm.addEventListener('submit', async (e) => {-->
-<!--        e.preventDefault();-->
-
-<!--        const formData = new FormData(editUserForm);-->
-<!--        const userData = Object.fromEntries(formData.entries());-->
-<!--        const userId = userData.id;-->
-
-<!--        // Преобразование ролей в массив-->
-<!--        userData.roles = Array.from(formData.getAll('roles')).map(id => ({ id: parseInt(id) }));-->
-
-<!--        // Если пароль не изменен, удаляем поле-->
-<!--        if (!userData.password) {-->
-<!--            delete userData.password;-->
-<!--        }-->
-
-<!--        try {-->
-<!--            const response = await fetch(`/api/admin/${userId}`, {-->
-<!--                method: 'PUT',-->
-<!--                headers: {-->
-<!--                    'Content-Type': 'application/json',-->
-<!--                    [csrfHeader]: csrfToken-->
-<!--                },-->
-<!--                body: JSON.stringify(userData)-->
-<!--            });-->
-
-<!--            if (response.ok) {-->
-<!--                loadUsers();-->
-<!--                editModal.hide();-->
-<!--                alert('Пользователь успешно обновлен');-->
-<!--            } else {-->
-<!--                throw new Error('Ошибка обновления пользователя');-->
-<!--            }-->
-<!--        } catch (error) {-->
-<!--            console.error('Ошибка обновления пользователя:', error);-->
-<!--            alert('Ошибка обновления пользователя');-->
-<!--        }-->
-<!--    });-->
-<!--    // Инициализация при загрузке страницы-->
-<!--    document.addEventListener('DOMContentLoaded', () => {-->
-<!--        loadCurrentUser();-->
-<!--        loadUsers();-->
-<!--    });-->
-<!--</script>-->
 </body>
 </html>

@@ -95,13 +95,11 @@ function displayAllUsers(users) {
     usersTableBody.innerHTML = tableHTML;
 }
 
-// Role ID to Name Mapping
 const roleMap = {
     1: "ROLE_ADMIN",
     2: "ROLE_USER"
 };
 
-// Helper function to extract role names, handling both role objects and role IDs
 function getRoleNames(roles) {
     if (!roles) return [];
 
@@ -113,11 +111,11 @@ function getRoleNames(roles) {
                 // Use the roleMap to get the role name:
                 return roleMap[role] || 'Unknown Role';
             } else {
-                return 'Unknown Role';  // Handle unexpected data types
+                return 'Unknown Role';
             }
         });
     } else {
-        return [];  // If roles is not an array, return an empty array
+        return [];
     }
 }
 
@@ -137,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             setupAddUserForm();
             setupEditButtons();
             setupEditForm();
-            setupDeleteButtons(); // Добавляем обработчик кнопок удаления
+            setupDeleteButtons();
         }
 
         const adminBtn = document.getElementById('adminBtn');
@@ -146,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (typeof role === 'object' && role !== null && role.hasOwnProperty('name')) {
                     return role.name === 'ROLE_ADMIN';  // It's a role object
                 }
-                return false; // Handle cases where roles might be IDs
+                return false;
             });
             adminBtn.style.display = isAdmin ? 'block' : 'none';
         }
@@ -217,14 +215,12 @@ async function openEditModal(userId) {
         });
         const user = await response.json();
 
-        // Заполнение формы
         document.getElementById('editId').value = user.id;
         document.getElementById('editUsername').value = user.username;
         document.getElementById('editLastname').value = user.lastname;
         document.getElementById('editAge').value = user.age;
         document.getElementById('editEmail').value = user.email;
 
-        // Выбор ролей
         const roleSelect = document.getElementById('editRoles');
         Array.from(roleSelect.options).forEach(option => {
             option.selected = user.roles.some(role => {
@@ -237,7 +233,6 @@ async function openEditModal(userId) {
             });
         });
 
-        // Открытие модального окна
         const editModal = new bootstrap.Modal(document.getElementById('editModal'));
         editModal.show();
     } catch (error) {
@@ -254,11 +249,8 @@ async function setupEditForm() {
         e.preventDefault();
 
         const formData = new FormData(form);
-        // The following roles conversion must consider the two role types that
-        // may be returned from the form - Integer vs Object!
         let roles = Array.from(formData.getAll('roles')).map(role => {
             if(isNaN(parseInt(role))) {
-                // It's a string, so it's an object. Parse to JSON and return it.
                 return JSON.parse(role);
             } else {
                 // It's a number, so simply return it.
@@ -275,7 +267,6 @@ async function setupEditForm() {
             roles: roles
         };
 
-        // Добавляем пароль, только если он был изменен
         const password = formData.get('password');
         if (password) {
             userData.password = password;
@@ -307,7 +298,6 @@ async function setupEditForm() {
         }
     });
 }
-// Добавьте эту функцию в app.js
 async function setupDeleteButtons() {
     document.addEventListener('click', async (e) => {
         if (e.target.classList.contains('delete-btn')) {
