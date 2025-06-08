@@ -24,7 +24,7 @@ async function loadCurrentUser() {
 
 async function loadAllUsers() {
     try {
-        const response = await fetch('/api/admin', {  // Используем тот же endpoint, что и в admin.html
+        const response = await fetch('/api/admin', {
             headers: {
                 [csrfHeader]: csrfToken
             }
@@ -44,7 +44,7 @@ async function loadAllUsers() {
 
 function displayCurrentUserNavbar(user) {
     document.getElementById('currentUsername').textContent = user.username;
-    document.getElementById('currentUserRoles').textContent = user.roles.map(r => r.name).join(', ');
+    document.getElementById('currentUserRoles').textContent = getRoleNames(user.roles).join(', ');
 }
 
 function displayCurrentUserTable(user) {
@@ -57,7 +57,7 @@ function displayCurrentUserTable(user) {
                 <td>${user.lastname}</td>
                 <td>${user.age}</td>
                 <td>${user.email}</td>
-                <td>${user.roles.map(r => r.name).join(', ')}</td>
+                <td>${getRoleNames(user.roles).join(', ')}</td>
             </tr>
         `;
     }
@@ -79,7 +79,7 @@ function displayAllUsers(users) {
                 <td>${user.lastname}</td>
                 <td>${user.age}</td>
                 <td>${user.email}</td>
-                <td>${user.roles.map(r => r.name).join(', ')}</td>
+                <td>${getRoleNames(user.roles).join(', ')}</td>
                 <td>
                     <button class="btn btn-primary btn-sm edit-btn"
                             data-id="${user.id}">Edit</button>
@@ -93,6 +93,32 @@ function displayAllUsers(users) {
     });
 
     usersTableBody.innerHTML = tableHTML;
+}
+
+// Role ID to Name Mapping
+const roleMap = {
+    1: "ROLE_ADMIN",
+    2: "ROLE_USER"
+};
+
+// Helper function to extract role names, handling both role objects and role IDs
+function getRoleNames(roles) {
+    if (!roles) return [];
+
+    if (Array.isArray(roles)) {
+        return roles.map(role => {
+            if (typeof role === 'object' && role !== null && role.hasOwnProperty('name')) {
+                return role.name; // It's a role object
+            } else if (typeof role === 'number') {
+                // Use the roleMap to get the role name:
+                return roleMap[role] || 'Unknown Role';
+            } else {
+                return 'Unknown Role';  // Handle unexpected data types
+            }
+        });
+    } else {
+        return [];  // If roles is not an array, return an empty array
+    }
 }
 
 
@@ -116,7 +142,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const adminBtn = document.getElementById('adminBtn');
         if (adminBtn) {
-            const isAdmin = user.roles.some(role => role.name === 'ADMIN');
+            const isAdmin = user.roles.some(role => {
+                if (typeof role === 'object' && role !== null && role.hasOwnProperty('name')) {
+                    return role.name === 'ROLE_ADMIN';  // It's a role object
+                }
+                return false; // Handle cases where roles might be IDs
+            });
             adminBtn.style.display = isAdmin ? 'block' : 'none';
         }
     } catch (error) {
@@ -196,9 +227,14 @@ async function openEditModal(userId) {
         // Выбор ролей
         const roleSelect = document.getElementById('editRoles');
         Array.from(roleSelect.options).forEach(option => {
-            option.selected = user.roles.some(role =>
-                role.id === parseInt(option.value)
-            );
+            option.selected = user.roles.some(role => {
+                if (typeof role === 'object' && role !== null && role.hasOwnProperty('id')) {
+                    return role.id === parseInt(option.value);
+                } else if (typeof role === 'number') {
+                    return role === parseInt(option.value);
+                }
+                return false;
+            });
         });
 
         // Открытие модального окна
@@ -218,7 +254,17 @@ async function setupEditForm() {
         e.preventDefault();
 
         const formData = new FormData(form);
-        const roles = Array.from(formData.getAll('roles')).map(id => ({ id: parseInt(id) }));
+        // The following roles conversion must consider the two role types that
+        // may be returned from the form - Integer vs Object!
+        let roles = Array.from(formData.getAll('roles')).map(role => {
+            if(isNaN(parseInt(role))) {
+                // It's a string, so it's an object. Parse to JSON and return it.
+                return JSON.parse(role);
+            } else {
+                // It's a number, so simply return it.
+                return {id: parseInt(role)};
+            }
+        });
 
         const userData = {
             id: formData.get('id'),
