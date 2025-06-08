@@ -1,50 +1,130 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>User Profile</title>
-    <!-- Bootstrap CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Home Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="app.js"></script>
 </head>
 <body>
-<nav class="navbar navbar-dark bg-dark">
-    <div class="container-fluid">
-            <span class="navbar-text text-white">
-                Logged as: <span id="currentUser"></span>
-            </span>
-        <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
+
+<nav class="navbar navbar-dark bg-dark px-3">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <span class="navbar-text text-white">
+            <span class="fw-bold" id="currentUsername"></span>
+            with roles:
+            <span id="currentUserRoles"></span>
+        </span>
+        <a href="/logout" class="btn btn-outline-light">Logout</a>
     </div>
 </nav>
 
-<div class="container mt-4">
-    <h1>Your Profile</h1>
-    <div class="card">
-        <div class="card-body">
-            <div id="userProfile">
-                <!-- Данные будут загружены через JS -->
+<div class="container-fluid" style="padding-top: 20px">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <button class="btn btn-primary btn-lg btn-block text-start"
+                        onclick="window.location.href = '/admin'">
+                    Admin
+                </button>
+                <button class="btn btn-primary btn-lg btn-block text-start"
+                        onclick="window.location.href = '/user'">
+                    User
+                </button>
+            </div>
+        </div>
+
+        <div class="container-fluid col-10 bg-light" style="padding-left: 20px">
+            <div class="tab-content" id="homeTabContent">
+                <div class="tab-pane fade show active" id="admin" role="tabpanel" aria-labelledby="admin-tab">
+                    <h1>User information-page</h1>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="usersTable" role="tabpanel"
+                             aria-labelledby="usersTable-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">About user</h3>
+                                </div>
+                                <div class="container mt-4">
+                                    <table class="table table-hover text-center">
+                                        <thead>
+                                        <tr>
+                                            <th>Id</th>
+                                            <th>First Name</th>
+                                            <th>Last Name</th>
+                                            <th>Age</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="userTableBody">
+                                        <!-- Данные заполняются через JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    $(document).ready(function() {
-        // Загрузка данных пользователя
-        fetch('/api/user')
-            .then(response => response.json())
-            .then(user => {
-                $('#currentUser').text(user.username);
+    // Получение CSRF токенов
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
-                const roles = user.roles.map(r =>
-                    `<span class="badge bg-info">${r.name.replace('ROLE_', '')}</span>`
-                ).join(' ');
-
-                $('#userProfile').html(`
-                        <p><strong>Username:</strong> ${user.username}</p>
-                        <p><strong>Roles:</strong> ${roles}</p>
-                        <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
-                    `);
+    // Загрузка данных пользователя
+    async function loadUserData() {
+        try {
+            const response = await fetch('/api/user', {
+                headers: {
+                    [csrfHeader]: csrfToken
+                }
             });
-    });
+
+            if (!response.ok) {
+                throw new Error('Ошибка загрузки данных пользователя');
+            }
+
+            const user = await response.json();
+
+            // Обновление навигационной панели
+            document.getElementById('currentUsername').textContent = user.username;
+            document.getElementById('currentUserRoles').textContent = user.roles.map(r => r.name).join(', ');
+
+            // Показать/скрыть кнопку Admin
+            const isAdmin = user.roles.some(role => role.name === 'ADMIN');
+            document.getElementById('adminBtn').style.display = isAdmin ? 'block' : 'none';
+
+            // Назначить обработчик для кнопки Admin
+            document.getElementById('adminBtn').addEventListener('click', () => {
+                window.location.href = '/admin';
+            });
+
+            // Заполнение таблицы
+            document.getElementById('userTableBody').innerHTML = `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.lastname}</td>
+                <td>${user.age}</td>
+                <td>${user.email}</td>
+                <td>${user.roles.map(r => r.name).join(', ')}</td>
+            </tr>
+        `;
+        } catch (error) {
+            console.error('Ошибка загрузки данных пользователя:', error);
+            alert('Ошибка загрузки данных пользователя');
+        }
+    }
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', loadUserData);
 </script>
 </body>
 </html>

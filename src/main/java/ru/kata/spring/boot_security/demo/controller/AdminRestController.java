@@ -18,7 +18,7 @@ public class AdminRestController {
         this.userService = userService;
     }
 
-    @GetMapping(value = "/admin", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<User>> getAllUsers() {
         return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
