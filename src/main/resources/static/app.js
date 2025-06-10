@@ -106,9 +106,8 @@ function getRoleNames(roles) {
     if (Array.isArray(roles)) {
         return roles.map(role => {
             if (typeof role === 'object' && role !== null && role.hasOwnProperty('name')) {
-                return role.name; // It's a role object
+                return role.name;
             } else if (typeof role === 'number') {
-                // Use the roleMap to get the role name:
                 return roleMap[role] || 'Unknown Role';
             } else {
                 return 'Unknown Role';
@@ -253,7 +252,6 @@ async function setupEditForm() {
             if(isNaN(parseInt(role))) {
                 return JSON.parse(role);
             } else {
-                // It's a number, so simply return it.
                 return {id: parseInt(role)};
             }
         });
