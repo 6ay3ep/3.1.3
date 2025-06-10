@@ -248,13 +248,7 @@ async function setupEditForm() {
         e.preventDefault();
 
         const formData = new FormData(form);
-        let roles = Array.from(formData.getAll('roles')).map(role => {
-            if(isNaN(parseInt(role))) {
-                return JSON.parse(role);
-            } else {
-                return {id: parseInt(role)};
-            }
-        });
+        let roles = Array.from(formData.getAll('roles')).map(role => ({id: parseInt(role)}));;
 
         const userData = {
             id: formData.get('id'),
